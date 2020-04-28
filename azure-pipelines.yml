@@ -12,14 +12,15 @@ variables:
   dotnetSdkVersion: '3.1.100'
 
 steps:
-<<<<<<< HEAD
-- task: DotNetCoreInstaller@0
-=======
 - task: UseDotNet@2
->>>>>>> 1ed6a2e30a95a134dc32365772f63783676c38b1
   displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
   inputs:
     version: '$(dotnetSdkVersion)'
+
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 2.1.505 for SonarCloud'
+  inputs:
+    version: '2.1.505'
 
 - task: Npm@1
   displayName: 'Run npm install'
@@ -42,6 +43,19 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
 
+- task: SonarCloudPrepare@1
+  displayName: 'Prepare SonarCloud analysis'
+  inputs:
+    SonarCloud: 'SonarCloud connection 1'
+    organization: '$(SonarOrganization)'
+    scannerMode: 'MSBuild'
+    projectKey: '$(SonarProjectKey)'
+    projectName: '$(SonarProjectName)'
+    projectVersion: '$(Build.BuildNumber)'
+    extraProperties: |
+     sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml
+     sonar.exclusions=**/wwwroot/lib/**/*
+
 - task: DotNetCoreCLI@2
   displayName: 'Build the project - $(buildConfiguration)'
   inputs:
@@ -50,8 +64,6 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
-<<<<<<< HEAD
-=======
   displayName: 'Install ReportGenerator'
   inputs:
     command: custom
@@ -62,13 +74,19 @@ steps:
   displayName: 'Run unit tests - $(buildConfiguration)'
   inputs:
     command: 'test'
-    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat="cobertura%2copencover" /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
     publishTestResults: true
     projects: '**/*.Tests.csproj'
 
 - script: |
     reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines
   displayName: 'Create code coverage report'
+
+- task: SonarCloudAnalyze@1
+  displayName: 'Run SonarCloud code analysis'
+
+- task: SonarCloudPublish@1
+  displayName: 'Publish SonarCloud quality gate results'
 
 - task: PublishCodeCoverageResults@1
   displayName: 'Publish code coverage report'
@@ -77,7 +95,6 @@ steps:
     summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
 
 - task: DotNetCoreCLI@2
->>>>>>> 1ed6a2e30a95a134dc32365772f63783676c38b1
   displayName: 'Publish the project - $(buildConfiguration)'
   inputs:
     command: 'publish'
