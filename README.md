@@ -1,4 +1,5 @@
 [![Build Status](https://dev.azure.com/Tailspin02112019/Space%20Game%20-%20web%20-%20SonarCloud/_apis/build/status/mslearn-tailspin-spacegame-web?branchName=security-scan)](https://dev.azure.com/Tailspin02112019/Space%20Game%20-%20web%20-%20SonarCloud/_build/latest?definitionId=6&branchName=security-scan)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=pktanksali_mslearn-tailspin-spacegame-web&metric=alert_status)](https://sonarcloud.io/dashboard?id=pktanksali_mslearn-tailspin-spacegame-web)
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
